@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Configuration;
 using Serilog.Core;
 using Seq.Extensions.Logging;
 using Serilog.Events;
@@ -46,9 +47,9 @@ public static class SeqLoggerExtensions
     public static ILoggerFactory AddSeq(
         this ILoggerFactory loggerFactory,
         string serverUrl = LocalServerUrl,
-        string apiKey = null,
+        string? apiKey = null,
         LogLevel minimumLevel = LogLevel.Information,
-        IDictionary<string, LogLevel> levelOverrides = null)
+        IDictionary<string, LogLevel>? levelOverrides = null)
     {
         if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
         if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
@@ -68,7 +69,7 @@ public static class SeqLoggerExtensions
     public static ILoggingBuilder AddSeq(
         this ILoggingBuilder loggingBuilder,
         string serverUrl = LocalServerUrl,
-        string apiKey = null)
+        string? apiKey = null)
     {
         if (loggingBuilder == null) throw new ArgumentNullException(nameof(loggingBuilder));
         if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
@@ -105,7 +106,7 @@ public static class SeqLoggerExtensions
     static bool TryCreateProvider(
         IConfigurationSection configuration,
         LogLevel defaultMinimumLevel,
-        out SerilogLoggerProvider provider)
+        [NotNullWhen(true)] out SerilogLoggerProvider? provider)
     {
         var serverUrl = configuration["ServerUrl"];
         if (string.IsNullOrWhiteSpace(serverUrl))
@@ -148,11 +149,11 @@ public static class SeqLoggerExtensions
     }
 
     static SerilogLoggerProvider CreateProvider(
-        IConfiguration configuration,
-        string defaultServerUrl,
-        string defaultApiKey)
+        IConfiguration? configuration,
+        string? defaultServerUrl,
+        string? defaultApiKey)
     {
-        string serverUrl = null, apiKey = null;
+        string? serverUrl = null, apiKey = null;
         if (configuration != null)
         {
             serverUrl = configuration["ServerUrl"];
@@ -169,21 +170,21 @@ public static class SeqLoggerExtensions
     }
 
     static SerilogLoggerProvider CreateProvider(
-        string serverUrl,
-        string apiKey,
+        string? serverUrl,
+        string? apiKey,
         LogLevel minimumLevel,
-        IDictionary<string, LogLevel> levelOverrides)
+        IDictionary<string, LogLevel>? levelOverrides)
     {
         var levelSwitch = new LoggingLevelSwitch(minimumLevel);
 
         var sink = new SeqSink(
-            serverUrl,
+            serverUrl!,
             apiKey,
             256 * 1024,
             new ControlledLevelSwitch(levelSwitch),
             null);
 
-        LevelOverrideMap overrideMap = null;
+        LevelOverrideMap? overrideMap = null;
         if (levelOverrides != null && levelOverrides.Count != 0)
         {
             var overrides = new Dictionary<string, LoggingLevelSwitch>();

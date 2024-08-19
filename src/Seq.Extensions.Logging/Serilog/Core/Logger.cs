@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Diagnostics.CodeAnalysis;
 using Serilog.Core.Enrichers;
 using Seq.Extensions.Logging;
 using Serilog.Events;
@@ -29,21 +30,19 @@ namespace Serilog.Core;
 /// </summary>
 sealed class Logger : ILogEventSink, IDisposable
 {
-    static readonly object[] NoPropertyValues = new object[0];
-
-    readonly MessageTemplateProcessor _messageTemplateProcessor = new MessageTemplateProcessor(new PropertyValueConverter(10, int.MaxValue));
+    readonly MessageTemplateProcessor _messageTemplateProcessor = new(new PropertyValueConverter(10, int.MaxValue));
     readonly ILogEventSink _sink;
-    readonly Action _dispose;
+    readonly Action? _dispose;
     readonly ILogEventEnricher _enricher;
 
-    readonly LoggingLevelSwitch _levelSwitch;
-    readonly LevelOverrideMap _overrideMap;
+    readonly LoggingLevelSwitch? _levelSwitch;
+    readonly LevelOverrideMap? _overrideMap;
 
     internal Logger(
         LoggingLevelSwitch levelSwitch,
         ILogEventSink sink,
-        Action dispose = null,
-        LevelOverrideMap overrideMap = null)
+        Action? dispose = null,
+        LevelOverrideMap? overrideMap = null)
         : this(sink, new ExceptionDataEnricher(), dispose, levelSwitch, overrideMap)
     {
     }
@@ -53,9 +52,9 @@ sealed class Logger : ILogEventSink, IDisposable
     Logger(
         ILogEventSink sink,
         ILogEventEnricher enricher,
-        Action dispose = null,
-        LoggingLevelSwitch levelSwitch = null,
-        LevelOverrideMap overrideMap = null)
+        Action? dispose = null,
+        LoggingLevelSwitch? levelSwitch = null,
+        LevelOverrideMap? overrideMap = null)
     {
         _sink = sink;
         _dispose = dispose;
@@ -71,7 +70,7 @@ sealed class Logger : ILogEventSink, IDisposable
     /// <returns>A logger that will enrich log events as specified.</returns>
     public Logger ForContext(ILogEventEnricher enricher)
     {
-        if (enricher == null)
+        if (enricher == null!)
             return this; // No context here, so little point writing to SelfLog.
 
         return new Logger(
@@ -89,7 +88,7 @@ sealed class Logger : ILogEventSink, IDisposable
     /// <returns>A logger that will enrich log events as specified.</returns>
     public Logger ForContext(IEnumerable<ILogEventEnricher> enrichers)
     {
-        if (enrichers == null)
+        if (enrichers == null!)
             return this; // No context here, so little point writing to SelfLog.
 
         return ForContext(new SafeAggregateEnricher(enrichers));
@@ -103,7 +102,7 @@ sealed class Logger : ILogEventSink, IDisposable
     /// <param name="destructureObjects">If true, the value will be serialized as a structured
     /// object if possible; if false, the object will be recorded as a scalar or simple array.</param>
     /// <returns>A logger that will enrich log events as specified.</returns>
-    public Logger ForContext(string propertyName, object value, bool destructureObjects = false)
+    public Logger ForContext(string propertyName, object? value, bool destructureObjects = false)
     {
         if (!LogEventProperty.IsValidName(propertyName))
         {
@@ -120,8 +119,7 @@ sealed class Logger : ILogEventSink, IDisposable
         var levelSwitch = _levelSwitch;
         if (_overrideMap != null && propertyName == Constants.SourceContextPropertyName)
         {
-            var context = value as string;
-            if (context != null)
+            if (value is string context)
                 _overrideMap.GetEffectiveLevel(context, out levelSwitch);
         }
 
@@ -141,21 +139,10 @@ sealed class Logger : ILogEventSink, IDisposable
     /// <returns>A logger that will enrich log events as specified.</returns>
     public Logger ForContext(Type source)
     {
-        if (source == null)
+        if (source == null!)
             return this; // Little point in writing to SelfLog here because we don't have any contextual information
 
         return ForContext(Constants.SourceContextPropertyName, source.FullName);
-    }
-
-    /// <summary>
-    /// Create a logger that marks log events as being from the specified
-    /// source type.
-    /// </summary>
-    /// <typeparam name="TSource">Type generating log messages in the context.</typeparam>
-    /// <returns>A logger that will enrich log events as specified.</returns>
-    public Logger ForContext<TSource>()
-    {
-        return ForContext(typeof(TSource));
     }
 
     /// <summary>
@@ -177,7 +164,7 @@ sealed class Logger : ILogEventSink, IDisposable
     /// <param name="logEvent">The event to write.</param>
     public void Write(LogEvent logEvent)
     {
-        if (logEvent == null) return;
+        if (logEvent == null!) return;
         if (!IsEnabled(logEvent.Level)) return;
         Dispatch(logEvent);
     }
@@ -227,9 +214,9 @@ sealed class Logger : ILogEventSink, IDisposable
     ///     // -> "Hello, World!"
     /// }
     /// </example>
-    public bool BindMessageTemplate(string messageTemplate, object[] propertyValues, out MessageTemplate parsedTemplate, out IEnumerable<LogEventProperty> boundProperties)
+    public bool BindMessageTemplate(string messageTemplate, object?[]? propertyValues, [NotNullWhen(true)] out MessageTemplate? parsedTemplate, [NotNullWhen(true)] out IEnumerable<LogEventProperty>? boundProperties)
     {
-        if (messageTemplate == null)
+        if (messageTemplate == null!)
         {
             parsedTemplate = null;
             boundProperties = null;
@@ -251,7 +238,7 @@ sealed class Logger : ILogEventSink, IDisposable
     /// object if possible; if false, the object will be recorded as a scalar or simple array.</param>
     /// <param name="property">The resulting property.</param>
     /// methods never throw exceptions).</returns>
-    public bool BindProperty(string propertyName, object value, bool destructureObjects, out LogEventProperty property)
+    public bool BindProperty(string propertyName, object? value, bool destructureObjects, [NotNullWhen(true)] out LogEventProperty? property)
     {
         if (!LogEventProperty.IsValidName(propertyName))
         {
