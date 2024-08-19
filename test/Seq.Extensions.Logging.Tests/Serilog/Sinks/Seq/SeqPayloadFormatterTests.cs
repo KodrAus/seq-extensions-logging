@@ -11,7 +11,7 @@ public class SeqPayloadFormatterTests
     {
         const string json = "{\"A\": 42}";
         var evt = Some.LogEvent("The answer is {Answer}", new JsonSafeString(json));
-        var payload = SeqPayloadFormatter.FormatCompactPayload(new[] { evt }, null);
+        var payload = SeqPayloadFormatter.FormatCompactPayload([evt], null);
         Assert.Contains("\"Answer\":{\"A\": 42}", payload);
     }
 
@@ -19,7 +19,7 @@ public class SeqPayloadFormatterTests
     public void DefaultJsonSafeStringsDoNotCorruptPayload()
     {
         var evt = Some.LogEvent("The answer is {Answer}", (JsonSafeString)default);
-        var payload = SeqPayloadFormatter.FormatCompactPayload(new[] { evt }, null);
+        var payload = SeqPayloadFormatter.FormatCompactPayload([evt], null);
         Assert.Contains("\"Answer\":\"<null>\"", payload);
     }
 }

@@ -16,7 +16,7 @@ public class ExceptionDataEnricherTests
         var exception = new Exception();
         var evt = Some.ErrorEvent(exception);
 
-        enricher.Enrich(evt, Some.PropertyFactory());
+        enricher.Enrich(evt, Some.PropertyValueFactory());
 
         Assert.Equal(0, evt.Properties.Count);
     }
@@ -35,7 +35,7 @@ public class ExceptionDataEnricherTests
         };
         var evt = Some.ErrorEvent(exception);
 
-        enricher.Enrich(evt, Some.PropertyFactory());
+        enricher.Enrich(evt, Some.PropertyValueFactory());
 
         Assert.Equal(1, evt.Properties.Count);
         var data = evt.Properties["ExceptionData"];
