@@ -30,11 +30,11 @@ public class SerilogLoggerTests
     const string Name = "test";
     const string TestMessage = "This is a test";
 
-    static (SerilogLogger logger, SerilogSink sink) SetUp(LogLevel logLevel)
+    static (SerilogLogger logger, SerilogSink sink) SetUp(LogLevel logLevel, params Action<EnrichingEvent>[] enrichers)
     {
         var sink = new SerilogSink();
 
-        var l = new global::Serilog.Core.Logger(new global::Serilog.Core.LoggingLevelSwitch(logLevel), sink);
+        var l = new global::Serilog.Core.Logger(sink, new Enricher(enrichers), null, new global::Serilog.Core.LoggingLevelSwitch(logLevel), null);
 
         var provider = new SerilogLoggerProvider(l);
         provider.SetScopeProvider(new LoggerExternalScopeProvider());

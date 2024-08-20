@@ -38,18 +38,9 @@ sealed class Logger : ILogEventSink, IDisposable
     readonly LoggingLevelSwitch? _levelSwitch;
     readonly LevelOverrideMap? _overrideMap;
 
-    internal Logger(
-        LoggingLevelSwitch levelSwitch,
-        ILogEventSink sink,
-        Action? dispose = null,
-        LevelOverrideMap? overrideMap = null)
-        : this(sink, new ExceptionDataEnricher(), dispose, levelSwitch, overrideMap)
-    {
-    }
-
     // The messageTemplateProcessor, sink and enricher are required. Argument checks are dropped because
     // throwing from here breaks the logger's no-throw contract, and callers are all in this file anyway.
-    Logger(
+    internal Logger(
         ILogEventSink sink,
         ILogEventEnricher enricher,
         Action? dispose = null,
