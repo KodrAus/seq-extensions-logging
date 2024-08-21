@@ -85,7 +85,7 @@ public static class SeqLoggerExtensions
     /// </summary>
     /// <param name="loggingBuilder">The logging builder.</param>
     /// <param name="serverUrl">The Seq server URL; the default is http://localhost:5341.</param>
-    /// <param name="apiKey">A Seq API key to authenticate or tag messages from the logger.</param>\
+    /// <param name="apiKey">A Seq API key to authenticate or tag messages from the logger.</param>
     /// <param name="enrichers">A collection of enrichers to apply.</param>
     /// <returns>A logging builder to allow further configuration.</returns>
     public static ILoggingBuilder AddSeq(
