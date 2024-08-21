@@ -6,7 +6,7 @@ namespace Seq.Extensions.Logging;
 /// <summary>
 /// The input to an enricher.
 /// </summary>
-public sealed class EnrichingEvent
+public struct EnrichingEvent
 {
     internal EnrichingEvent(LogEvent logEvent, ILogEventPropertyValueFactory propertyFactory)
     {

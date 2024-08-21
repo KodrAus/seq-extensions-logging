@@ -19,22 +19,17 @@ class Enricher: ILogEventEnricher
     {
         _builtIn.Enrich(logEvent, propertyFactory);
 
-        // Avoids needing to allocate this type for each enricher we want to apply
-        // or when there are no enrichers present
-        if (_enrichers.Length > 0)
-        {
-            var enriching = new EnrichingEvent(logEvent, propertyFactory);
+        var enriching = new EnrichingEvent(logEvent, propertyFactory);
 
-            foreach (var enricher in _enrichers)
+        foreach (var enricher in _enrichers)
+        {
+            try
             {
-                try
-                {
-                    enricher(enriching);
-                }
-                catch (Exception ex)
-                {
-                    SelfLog.WriteLine("Exception {0} caught while enriching {1}.", ex, logEvent);
-                }
+                enricher(enriching);
+            }
+            catch (Exception ex)
+            {
+                SelfLog.WriteLine("Exception {0} caught while enriching {1}.", ex, logEvent);
             }
         }
     }
