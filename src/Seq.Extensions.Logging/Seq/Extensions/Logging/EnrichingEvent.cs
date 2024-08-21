@@ -19,6 +19,14 @@ public sealed class EnrichingEvent
     internal LogEvent LogEvent { get; }
 
     /// <summary>
+    /// Add a property to the event if not already present, otherwise, update its value.
+    /// </summary>
+    public void AddOrUpdateProperty(string propertyName, object propertyValue, bool serialize = false)
+    {
+        LogEvent.AddOrUpdateProperty(propertyName, _propertyFactory.CreatePropertyValue(propertyValue, serialize));
+    }
+
+    /// <summary>
     /// Add a property to the event if not already present.
     /// </summary>
     public void AddPropertyIfAbsent(string propertyName, object propertyValue, bool serialize = false)
@@ -26,6 +34,6 @@ public sealed class EnrichingEvent
         if (LogEvent.Properties.ContainsKey(propertyName))
             return;
 
-        LogEvent.AddOrUpdateProperty(propertyName, _propertyFactory.CreatePropertyValue(propertyValue, serialize));
+        AddOrUpdateProperty(propertyName, propertyValue, serialize);
     }
 }

@@ -357,6 +357,21 @@ public class SerilogLoggerTests
         Assert.Equal(activity.SpanId, single.SpanId);
     }
 
+    [Fact]
+    public void EnrichersAreApplied()
+    {
+        var (logger, sink) = SetUp(
+            LogLevel.Trace,
+            (evt) => evt.AddPropertyIfAbsent("EnrichedScalar", true),
+            (evt) => evt.AddPropertyIfAbsent("EnrichedObject", new { a = 1 }, true)
+        );
+
+        logger.Log(LogLevel.Information, 0, TestMessage, null, null!);
+
+        Assert.Equal(true, (sink.Writes[0].Properties["EnrichedScalar"] as ScalarValue).Value);
+        Assert.Equal(1, ((sink.Writes[0].Properties["EnrichedObject"] as StructureValue).Properties[0].Value as ScalarValue).Value);
+    }
+
     class FoodScope : IEnumerable<KeyValuePair<string, object>>
     {
         readonly string _name;

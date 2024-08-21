@@ -62,31 +62,6 @@ public static class SeqLoggerExtensions
     }
 
     /// <summary>
-    /// Adds a Seq logger.
-    /// </summary>
-    /// <param name="loggingBuilder">The logging builder.</param>
-    /// <param name="serverUrl">The Seq server URL; the default is http://localhost:5341.</param>
-    /// <param name="apiKey">A Seq API key to authenticate or tag messages from the logger.</param>
-    /// <returns>A logging builder to allow further configuration.</returns>
-    public static ILoggingBuilder AddSeq(
-        this ILoggingBuilder loggingBuilder,
-        string serverUrl = LocalServerUrl,
-        string? apiKey = null)
-    {
-        if (loggingBuilder == null) throw new ArgumentNullException(nameof(loggingBuilder));
-        if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
-
-        loggingBuilder.Services.AddSingleton<ILoggerProvider>(s =>
-        {
-            var opts = s.GetService<ILoggerProviderConfiguration<SerilogLoggerProvider>>();
-            var provider = CreateProvider(opts?.Configuration, serverUrl, apiKey);
-            return provider;
-        });
-
-        return loggingBuilder;
-    }
-
-    /// <summary>
     /// Adds a Seq logger configured from the supplied configuration section.
     /// </summary>
     /// <param name="loggingBuilder">The logging builder.</param>
@@ -101,6 +76,33 @@ public static class SeqLoggerExtensions
 
         if (TryCreateProvider(configuration, LevelAlias.Minimum, Array.Empty<Action<EnrichingEvent>>(), out var provider))
             loggingBuilder.Services.AddSingleton<ILoggerProvider>(_ => provider);
+
+        return loggingBuilder;
+    }
+
+    /// <summary>
+    /// Adds a Seq logger.
+    /// </summary>
+    /// <param name="loggingBuilder">The logging builder.</param>
+    /// <param name="serverUrl">The Seq server URL; the default is http://localhost:5341.</param>
+    /// <param name="apiKey">A Seq API key to authenticate or tag messages from the logger.</param>\
+    /// <param name="enrichers">A collection of enrichers to apply.</param>
+    /// <returns>A logging builder to allow further configuration.</returns>
+    public static ILoggingBuilder AddSeq(
+        this ILoggingBuilder loggingBuilder,
+        string serverUrl = LocalServerUrl,
+        string? apiKey = null,
+        IEnumerable<Action<EnrichingEvent>>? enrichers = null)
+    {
+        if (loggingBuilder == null) throw new ArgumentNullException(nameof(loggingBuilder));
+        if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
+
+        loggingBuilder.Services.AddSingleton<ILoggerProvider>(s =>
+        {
+            var opts = s.GetService<ILoggerProviderConfiguration<SerilogLoggerProvider>>();
+            var provider = CreateProvider(opts?.Configuration, serverUrl, apiKey, enrichers);
+            return provider;
+        });
 
         return loggingBuilder;
     }
@@ -154,7 +156,8 @@ public static class SeqLoggerExtensions
     static SerilogLoggerProvider CreateProvider(
         IConfiguration? configuration,
         string? defaultServerUrl,
-        string? defaultApiKey)
+        string? defaultApiKey,
+        IEnumerable<Action<EnrichingEvent>>? enrichers)
     {
         string? serverUrl = null, apiKey = null;
         if (configuration != null)
@@ -169,7 +172,7 @@ public static class SeqLoggerExtensions
         if (string.IsNullOrWhiteSpace(apiKey))
             apiKey = defaultApiKey;
 
-        return CreateProvider(serverUrl, apiKey, LevelAlias.Minimum, null, null);
+        return CreateProvider(serverUrl, apiKey, LevelAlias.Minimum, null, enrichers);
     }
 
     static SerilogLoggerProvider CreateProvider(
