@@ -126,6 +126,17 @@ builder.Logging.Configure(opts => {
 });
 ```
 
+### Enrichment
+
+You can add additional structured data to events being sent to Seq by specifying _enricher_ callbacks in the `AddSeq()` method:
+
+```csharp
+    .AddSeq(enrichers: [evt => evt.AddOrUpdateProperty(
+        "ThreadId",
+        Environment.CurrentManagedThreadId)
+    ]))
+```
+
 ### Troubleshooting
 
 > Nothing showed up, what can I do?
