@@ -6,7 +6,7 @@ namespace Seq.Extensions.Logging;
 /// <summary>
 /// The input to an enricher.
 /// </summary>
-public struct EnrichingEvent
+public readonly struct EnrichingEvent
 {
     internal EnrichingEvent(LogEvent logEvent, ILogEventPropertyValueFactory propertyFactory)
     {
@@ -14,7 +14,7 @@ public struct EnrichingEvent
         LogEvent = logEvent;
     }
 
-    ILogEventPropertyValueFactory _propertyFactory;
+    readonly ILogEventPropertyValueFactory _propertyFactory;
 
     internal LogEvent LogEvent { get; }
 
