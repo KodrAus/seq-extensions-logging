@@ -30,11 +30,11 @@ public class SerilogLoggerTests
     const string Name = "test";
     const string TestMessage = "This is a test";
 
-    static (SerilogLogger logger, SerilogSink sink) SetUp(LogLevel logLevel)
+    static (SerilogLogger logger, SerilogSink sink) SetUp(LogLevel logLevel, params Action<EnrichingEvent>[] enrichers)
     {
         var sink = new SerilogSink();
 
-        var l = new global::Serilog.Core.Logger(new global::Serilog.Core.LoggingLevelSwitch(logLevel), sink);
+        var l = new global::Serilog.Core.Logger(sink, new Enricher(enrichers), null, new global::Serilog.Core.LoggingLevelSwitch(logLevel), null);
 
         var provider = new SerilogLoggerProvider(l);
         provider.SetScopeProvider(new LoggerExternalScopeProvider());
@@ -355,6 +355,21 @@ public class SerilogLoggerTests
 
         Assert.Equal(activity.TraceId, single.TraceId);
         Assert.Equal(activity.SpanId, single.SpanId);
+    }
+
+    [Fact]
+    public void EnrichersAreApplied()
+    {
+        var (logger, sink) = SetUp(
+            LogLevel.Trace,
+            (evt) => evt.AddPropertyIfAbsent("EnrichedScalar", true),
+            (evt) => evt.AddPropertyIfAbsent("EnrichedObject", new { a = 1 }, true)
+        );
+
+        logger.Log(LogLevel.Information, 0, TestMessage, null, null!);
+
+        Assert.Equal(true, (sink.Writes[0].Properties["EnrichedScalar"] as ScalarValue).Value);
+        Assert.Equal(1, ((sink.Writes[0].Properties["EnrichedObject"] as StructureValue).Properties[0].Value as ScalarValue).Value);
     }
 
     class FoodScope : IEnumerable<KeyValuePair<string, object>>
