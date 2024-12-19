@@ -245,6 +245,22 @@ public class SerilogLoggerTests
     }
 
     [Fact]
+    public void OverridesStateEventIdIfSpecified()
+    {
+        var (logger, sink) = SetUp(LogLevel.Trace);
+
+        const int expected = 3;
+        
+        logger.Log<KeyValuePair<string, object>[]>(LogLevel.Information, expected, state: [new("EventId", "Something")], exception: null, formatter: (s, e) => "");
+        
+        Assert.Single(sink.Writes);
+
+        var eventId = (StructureValue)sink.Writes[0].Properties["EventId"];
+        var id = (ScalarValue)eventId.Properties.Single(p => p.Name == "Id").Value;
+        Assert.Equal(expected, id.Value);
+    }
+
+    [Fact]
     public void BeginScopeDestructuresObjectsWhenDestructurerIsUsedInMessageTemplate()
     {
         var (logger, sink) = SetUp(LogLevel.Trace);

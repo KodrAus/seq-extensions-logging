@@ -110,7 +110,7 @@ class SerilogLogger : FrameworkLogger
         }
 
         if (eventId.Id != 0 || eventId.Name != null)
-            properties.Add("EventId", CreateEventIdPropertyValue(eventId));
+            properties["EventId"] = CreateEventIdPropertyValue(eventId);
 
         var parsedTemplate = MessageTemplateParser.Parse(messageTemplate ?? "");
         var currentActivity = Activity.Current;
