@@ -18,7 +18,7 @@ public class ExceptionDataEnricherTests
 
         enricher.Enrich(evt, Some.PropertyValueFactory());
 
-        Assert.Equal(0, evt.Properties.Count);
+        Assert.Empty(evt.Properties);
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class ExceptionDataEnricherTests
 
         enricher.Enrich(evt, Some.PropertyValueFactory());
 
-        Assert.Equal(1, evt.Properties.Count);
+        Assert.Single(evt.Properties);
         var data = evt.Properties["ExceptionData"];
         var value = Assert.IsType<StructureValue>(data);
         Assert.Equal(2, value.Properties.Count);

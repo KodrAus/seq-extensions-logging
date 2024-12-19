@@ -131,7 +131,7 @@ public class SerilogLoggerTests
 
         Assert.Equal(3, sink.Writes.Count);
 
-        Assert.Equal(1, sink.Writes[0].Properties.Count);
+        Assert.Single(sink.Writes[0].Properties);
         Assert.Empty(sink.Writes[0].RenderMessage());
 
         Assert.Equal(2, sink.Writes[1].Properties.Count);
